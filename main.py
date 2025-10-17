@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, AnyHttpUrl
 from typing import Optional, List
+import requests
 
 app = FastAPI()
 
@@ -19,7 +20,7 @@ class AnalyzeBody(BaseModel):
 FRONT_TOL = (55, 45)
 BACK_TOL = (75, 25)
 
-# Dummy functions to prevent import errors
+# Dummy logic placeholders
 def url_to_bgr(url): return {}
 def rectify_card(img): return {}
 def measure_centering(img): return {'left': 50, 'right': 50, 'top': 50, 'bottom': 50}
@@ -107,3 +108,29 @@ def analyze(body: AnalyzeBody):
             'back_10': '75/25'
         }
     }
+
+# ---- API Client Tester ----
+def call_psa_api(front_url: str, back_url: Optional[str] = None):
+    API_URL = "https://psa-grader-api-1.onrender.com/analyze"
+
+    payload = {
+        "front_url": front_url,
+        "back_url": back_url
+    }
+
+    try:
+        response = requests.post(API_URL, json=payload)
+        response.raise_for_status()
+        print("API call success!")
+        return response.json()
+    except requests.RequestException as e:
+        print("API call failed:", e)
+        return {"error": str(e)}
+
+# 🔹 Uncomment below to test it locally
+# if __name__ == "__main__":
+#     result = call_psa_api(
+#         front_url="https://example.com/front.jpg",
+#         back_url="https://example.com/back.jpg"
+#     )
+#     print(result)
